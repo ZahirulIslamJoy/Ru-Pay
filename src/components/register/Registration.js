@@ -1,27 +1,49 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsFillEyeFill, BsFillEyeSlashFill } from "react-icons/bs";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthContext } from "../providers/AuthProviders";
+import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
   const [selectedValue, setSelectedValue] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const {register,handleSubmit,formState: { errors },} = useForm();
+  const {createUserWithEmailPass}=useContext(AuthContext);
+  const navigate=useNavigate();
+  
   const onSubmit = (data) => {
-    console.log(data);
+    const password=data.password;
+    const email=data.email;
+    const confirmPassword=data.confirmPassword;
+    if(password !== confirmPassword){
+       return toast.warn("Password and Confirm Password must be same", {
+        theme: "dark",
+        position: "top-right"
+      })
+    }
+
+    createUserWithEmailPass(email,password)
+    .then((result)=>{
+      toast.success("Registration is Successfull", {
+        theme: "light",
+        position: "top-right"
+      })
+      navigate("/")
+
+    })
+    .catch((error) => {
+      const errorMessage = error.message;
+      console.log(errorMessage);
+    });
   };
 
   const handleTypeChange = (e) => {
     const selectedValue = e.target.value;
     setSelectedValue(selectedValue);
   };
-
-
-  console.log(selectedValue);
   return (
     <div>
       <h1 className="text-center text-3xl mt-12">Welcome To RuPay</h1>
@@ -123,7 +145,7 @@ const Registration = () => {
               placeholder="Your Email"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">Email is required"</p>
+              <p className="text-red-500 text-sm">Email is required</p>
             )}
           </div>
           <div className="mt-4">
